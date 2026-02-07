@@ -1,0 +1,2 @@
+Time,CellN_m,CellE_m,Elevation_m,PassCount,LastRadioLtncy,DesignName,Task,MeasuredData,Machine,Speed,LastGPSMode,GPSAccTol,TargPassCount,TotalPasses,Lift,LastCMV,TargCMV,LastEVIB1,TargEVIB1,LastEVIB2,TargEVIB2,LastMDP,TargMDP,LastRMV,LastFreq,LastAmp,TargThickness,MachineGear,VibeState,LastTemp
+2025/Oct/01 18:04:02.200,1032811.470,-239853.850,3.558,4,10,Team-oriented-systematic-migration,?,Dataset-shoulder-2780,Machine-MistyRose-28,1.8km/h,RTK Fixed,Medium (0.045),2,4,?,120.6,50.0,?,?,?,?,143.8,50.0,0.6,24.0Hz,0.97mm,?,Forward,Off,?

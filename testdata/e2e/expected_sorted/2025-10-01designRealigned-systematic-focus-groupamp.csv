@@ -1,0 +1,2 @@
+Time,CellN_m,CellE_m,Elevation_m,PassCount,LastRadioLtncy,DesignName,Task,MeasuredData,Machine,Speed,LastGPSMode,GPSAccTol,TargPassCount,TotalPasses,Lift,LastCMV,TargCMV,LastEVIB1,TargEVIB1,LastEVIB2,TargEVIB2,LastMDP,TargMDP,LastRMV,LastFreq,LastAmp,TargThickness,MachineGear,VibeState,LastTemp
+2025/Oct/01 09:22:49.700,1032547.290,-333993.640,2,10,1010_NY_avrett_LAV_Planum-065,Realigned-systematic-focus-group,1010 ny avrett Lav.CAT CS14  05-001 Infra Anlegg,Machine-Linen-39,Machine-PaleVioletRed-88,RTK Fixed,Coarse (0.100),4,2,?,?,50.0,?,?,?,?,?,50.0,?,?,?,?,Reverse,Off,?,

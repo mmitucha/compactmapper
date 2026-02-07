@@ -1,0 +1,24 @@
+*.exe
+*.dll
+*.so
+*.dylib
+*.bin
+node_modules/
+dist/
+build/
+target/
+
+# Large data files
+*.zip
+*.tar.gz
+*.iso
+data/
+datasets/
+
+# IDE and OS files
+.vscode/
+.idea/
+*.swp
+
+# Old data
+testdata/integration/input/bkp

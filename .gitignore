@@ -24,5 +24,8 @@ vendor/
 
 # Old/backup files
 *.old.*
-.bkp
-README.old.md
+**/bkp/
+
+# claude files
+.claude
+.serena
