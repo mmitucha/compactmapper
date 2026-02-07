@@ -1,0 +1,28 @@
+# Build directory
+build/
+
+# Test outputs
+tmp/
+coverage.out
+coverage.html
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Go
+*.test
+*.out
+vendor/
+
+# Old/backup files
+*.old.*
+.bkp
+README.old.md
