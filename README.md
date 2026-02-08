@@ -6,9 +6,10 @@
 
 **Secondary Feature:** Convert sorted CSV files to LAS point cloud format with RGB color-coded pass-count visualization.
 
-> **Origin:** Built for CAT Intelligent Compaction data gathered from multiple rollers across different construction tasks. Originally a Python script, rewritten in Go with Fyne GUI to create a **single-click application for non-technical users** - no CLI required, no dependencies to install.
+> [!NOTE]
+> **🎵 Origin & Development**
 >
-> **Why Go + Fyne:** Single statically-linked executable for Mac/Linux/Windows, making it accessible to field engineers and operators without technical setup.
+> Built to solve **one specific problem**: processing CAT Intelligent Compaction data from multiple rollers across construction tasks. Originally a Python script, **vibecoded** with [Claude Code](https://claude.ai/code) into a Go + Fyne GUI application for **single-click accessibility**. Single statically-linked executable works on Mac/Linux/Windows, making accessible to non-technical audience.
 
 ## Features
 
