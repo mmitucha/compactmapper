@@ -179,7 +179,7 @@ func convertCSVtoLAS(csvPath, outputFolder string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }() // Read-only file; close error is non-actionable
 
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()

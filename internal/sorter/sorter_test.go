@@ -232,13 +232,19 @@ func TestSortCSVWithChunking(t *testing.T) {
 
 	// Write header
 	header := "Time,CellN_m,CellE_m,Elevation_m,PassCount,DesignName,LastAmp,TargPassCount\n"
-	f.WriteString(header)
+	if _, err := f.WriteString(header); err != nil {
+		t.Fatal(err)
+	}
 
 	// Write 100 rows (will test chunking with smaller chunk size)
 	for i := 0; i < 100; i++ {
-		f.WriteString("2025/Oct/01 09:30:02.800,100,200,5.0,2,Design1,0.97,4\n")
+		if _, err := f.WriteString("2025/Oct/01 09:30:02.800,100,200,5.0,2,Design1,0.97,4\n"); err != nil {
+			t.Fatal(err)
+		}
 	}
-	f.Close()
+	if err := f.Close(); err != nil {
+		t.Fatal(err)
+	}
 
 	// Run sorter
 	err = SortCSV(testCSV, outputDir, false, nil)

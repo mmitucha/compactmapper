@@ -43,7 +43,7 @@ func TestConvertCSVToLAS(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to read LAS file: %v", err)
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	header := reader.GetHeader()
 	if header.PointFormat != 3 {

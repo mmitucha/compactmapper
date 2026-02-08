@@ -49,7 +49,7 @@ func ConvertCSVToLAS(csvPath, outputDir string) error {
 	if err != nil {
 		return fmt.Errorf("error opening CSV file: %v", err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }() // Read-only file; close error is non-actionable
 
 	reader := csv.NewReader(file)
 

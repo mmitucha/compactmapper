@@ -47,7 +47,7 @@ func (w *Writer) AddPoint(p Point) {
 }
 
 // Write writes the LAS file to disk
-func (w *Writer) Write(filename string) error {
+func (w *Writer) Write(filename string) (retErr error) {
 	if len(w.points) == 0 {
 		return fmt.Errorf("no points to write")
 	}
@@ -56,7 +56,14 @@ func (w *Writer) Write(filename string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	// Propagate close error via named return: Close() flushes OS buffers,
+	// so a failure here means the LAS file is silently corrupt.
+	// We only overwrite retErr when no prior write error exists.
+	defer func() {
+		if cerr := file.Close(); retErr == nil && cerr != nil {
+			retErr = fmt.Errorf("error closing LAS file: %w", cerr)
+		}
+	}()
 
 	// LAS 1.2 Header (227 bytes)
 	header := make([]byte, 227)

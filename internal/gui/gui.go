@@ -83,7 +83,7 @@ func showFileOrFolderDialog(onSelect func(path string, isDir bool), window fyne.
 			if err != nil || uri == nil {
 				return
 			}
-			defer uri.Close()
+			defer func() { _ = uri.Close() }() // Read-only URI; close error is non-actionable
 			onSelect(uri.URI().Path(), false)
 		}, window)
 	})
@@ -256,7 +256,13 @@ func Run() {
 					statusLabel.SetText("❌ Error creating log file")
 					return
 				}
-				defer errorLog.Close()
+				// Write file: log close error to stderr since this goroutine can't return one.
+				// Close() flushes buffered writes; failure means the error log may be incomplete.
+				defer func() {
+					if err := errorLog.Close(); err != nil {
+						fmt.Fprintf(os.Stderr, "warning: error closing error log: %v\n", err)
+					}
+				}()
 				statusLabel.SetText(fmt.Sprintf("Error logging enabled: %s", errorLogPath))
 			}
 
