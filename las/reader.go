@@ -38,7 +38,7 @@ func NewReader(filename string) (*Reader, error) {
 
 	// Read and parse header
 	if err := reader.readHeader(); err != nil {
-		file.Close()
+		_ = file.Close() // Header parse error takes precedence; best-effort cleanup
 		return nil, err
 	}
 

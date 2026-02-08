@@ -1,3 +1,18 @@
+# Go Standards (Critical)
+- Never ignore errors, wrap with %w
+- ctx context.Context as first param, pass to all I/O
+- Structured logging only (slog/zap), no secrets in logs
+- Defer cleanup after acquire, check close errors
+- Goroutines must be cancelable, no leaks
+- Table-driven tests for critical paths, not coverage
+- Timeouts on all external calls
+- Small interfaces (1-3 methods), defined by consumer
+- Max 50 LOC per function, max 4 params (use structs)
+- Refactor duplication on 3rd occurrence (Rule of Three)
+- Explain non-obvious changes in comments
+- Readability over cleverness
+- No globals except config/constants
+
 # CompactMapper - Claude Code Instructions
 
 ## Overview

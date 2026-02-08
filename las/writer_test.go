@@ -44,7 +44,7 @@ func TestWriteAndRead(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewReader failed: %v", err)
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	// Check header
 	header := reader.GetHeader()
@@ -139,7 +139,7 @@ func TestBoundsCalculation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 
 	header := reader.GetHeader()
 

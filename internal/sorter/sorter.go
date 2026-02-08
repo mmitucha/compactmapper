@@ -78,7 +78,7 @@ func SortCSV(inputPath, outputDir string, skipErrors bool, errorLog *os.File) er
 	if err != nil {
 		return fmt.Errorf("error opening file: %v", err)
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }() // Read-only file; close error is non-actionable
 
 	// Create output directory if it doesn't exist
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
@@ -145,7 +145,8 @@ func SortCSV(inputPath, outputDir string, skipErrors bool, errorLog *os.File) er
 			// This prevents a single malformed row from stopping the entire pipeline
 			if skipErrors {
 				if errorLog != nil {
-					fmt.Fprintf(errorLog, "File: %s, Row %d: error reading row: %v\n", filepath.Base(inputPath), rowCount+2, err)
+					// Best-effort log; write failure is non-fatal in skip-errors mode
+					_, _ = fmt.Fprintf(errorLog, "File: %s, Row %d: error reading row: %v\n", filepath.Base(inputPath), rowCount+2, err)
 				}
 				skippedRows++
 				continue
@@ -168,7 +169,8 @@ func SortCSV(inputPath, outputDir string, skipErrors bool, errorLog *os.File) er
 	}
 
 	if skipErrors && skippedRows > 0 && errorLog != nil {
-		fmt.Fprintf(errorLog, "File: %s - Total skipped rows during sorting: %d\n", filepath.Base(inputPath), skippedRows)
+		// Best-effort log; write failure is non-fatal in skip-errors mode
+		_, _ = fmt.Fprintf(errorLog, "File: %s - Total skipped rows during sorting: %d\n", filepath.Base(inputPath), skippedRows)
 	}
 
 	// Write grouped data to files
@@ -193,7 +195,7 @@ func SortCSV(inputPath, outputDir string, skipErrors bool, errorLog *os.File) er
 		// Write header only if file is new
 		if !fileExists {
 			if err := writer.Write(header); err != nil {
-				outFile.Close()
+				_ = outFile.Close() // Write error takes precedence; best-effort cleanup
 				return fmt.Errorf("error writing header to %s: %v", sanitized, err)
 			}
 		}
@@ -201,18 +203,20 @@ func SortCSV(inputPath, outputDir string, skipErrors bool, errorLog *os.File) er
 		// Write data rows
 		for _, row := range rows {
 			if err := writer.Write(row); err != nil {
-				outFile.Close()
+				_ = outFile.Close() // Write error takes precedence; best-effort cleanup
 				return fmt.Errorf("error writing row to %s: %v", sanitized, err)
 			}
 		}
 
 		writer.Flush()
 		if err := writer.Error(); err != nil {
-			outFile.Close()
+			_ = outFile.Close() // Flush error takes precedence; best-effort cleanup
 			return fmt.Errorf("error flushing writer for %s: %v", sanitized, err)
 		}
 
-		outFile.Close()
+		if err := outFile.Close(); err != nil {
+			return fmt.Errorf("error closing output file %s: %v", sanitized, err)
+		}
 	}
 
 	return nil
@@ -229,7 +233,8 @@ func processChunk(chunk [][]string, timeIdx, designIdx, ampIdx int, groups map[G
 		if err != nil {
 			if skipErrors {
 				if errorLog != nil {
-					fmt.Fprintf(errorLog, "File: %s, Row in chunk %d: error parsing date from '%s': %v\n", filename, i+1, row[timeIdx], err)
+					// Best-effort log; write failure is non-fatal in skip-errors mode
+					_, _ = fmt.Fprintf(errorLog, "File: %s, Row in chunk %d: error parsing date from '%s': %v\n", filename, i+1, row[timeIdx], err)
 				}
 				skippedRows++
 				continue
@@ -270,7 +275,8 @@ func SortCSVDirectory(inputDir, outputDir string, skipErrors bool, errorLog *os.
 		if err := SortCSV(file, outputDir, skipErrors, errorLog); err != nil {
 			if skipErrors {
 				if errorLog != nil {
-					fmt.Fprintf(errorLog, "Error processing %s: %v\n", filepath.Base(file), err)
+					// Best-effort log; write failure is non-fatal in skip-errors mode
+					_, _ = fmt.Fprintf(errorLog, "Error processing %s: %v\n", filepath.Base(file), err)
 				}
 				continue
 			}

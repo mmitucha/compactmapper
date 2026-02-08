@@ -117,7 +117,13 @@ func runSortOnly(input, output string, isDirectory bool, skipErrors bool) {
 			fmt.Fprintf(os.Stderr, "Error creating error log file: %v\n", err)
 			os.Exit(1)
 		}
-		defer errorLog.Close()
+		// Write file: log close error to stderr since this goroutine can't return one.
+		// Close() flushes buffered writes; failure means the error log may be incomplete.
+		defer func() {
+			if err := errorLog.Close(); err != nil {
+				fmt.Fprintf(os.Stderr, "warning: error closing error log: %v\n", err)
+			}
+		}()
 		fmt.Printf("Error logging enabled: %s\n", errorLogPath)
 	}
 
@@ -168,7 +174,13 @@ func runFullPipeline(input, output string, isDirectory bool, skipErrors bool) {
 			fmt.Fprintf(os.Stderr, "Error creating error log file: %v\n", err)
 			os.Exit(1)
 		}
-		defer errorLog.Close()
+		// Write file: log close error to stderr since main() can't return one.
+		// Close() flushes buffered writes; failure means the error log may be incomplete.
+		defer func() {
+			if err := errorLog.Close(); err != nil {
+				fmt.Fprintf(os.Stderr, "warning: error closing error log: %v\n", err)
+			}
+		}()
 		fmt.Printf("Error logging enabled: %s\n\n", errorLogPath)
 	}
 

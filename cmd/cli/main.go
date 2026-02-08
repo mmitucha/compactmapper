@@ -73,7 +73,13 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Error creating error log file: %v\n", err)
 			os.Exit(1)
 		}
-		defer errorLog.Close()
+		// Write file: log close error to stderr since main() can't return one.
+		// Close() flushes buffered writes; failure means the error log may be incomplete.
+		defer func() {
+			if err := errorLog.Close(); err != nil {
+				fmt.Fprintf(os.Stderr, "warning: error closing error log: %v\n", err)
+			}
+		}()
 		fmt.Printf("Error logging enabled: %s\n\n", errorLogPath)
 	}
 
@@ -85,7 +91,8 @@ func main() {
 		if err := convertCSVtoLAS(csvFile, *outputDir, *skipErrors, errorLog); err != nil {
 			fmt.Printf(" FAILED\n  Error: %v\n", err)
 			if errorLog != nil {
-				fmt.Fprintf(errorLog, "File: %s - Error: %v\n", filepath.Base(csvFile), err)
+				// Best-effort log; write failure is non-fatal in skip-errors mode
+				_, _ = fmt.Fprintf(errorLog, "File: %s - Error: %v\n", filepath.Base(csvFile), err)
 			}
 			if !*skipErrors {
 				continue
@@ -112,7 +119,7 @@ func convertCSVtoLAS(csvPath, outputFolder string, skipErrors bool, errorLog *os
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }() // Read-only file; close error is non-actionable
 
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
@@ -140,6 +147,8 @@ func convertCSVtoLAS(csvPath, outputFolder string, skipErrors bool, errorLog *os
 	}
 
 	// Parse points
+	// All _, _ = fmt.Fprintf(errorLog, ...) below are best-effort:
+	// write failure is non-fatal in skip-errors mode
 	var points []Point
 	skippedRows := 0
 	for i := 1; i < len(records); i++ {
@@ -149,7 +158,7 @@ func convertCSVtoLAS(csvPath, outputFolder string, skipErrors bool, errorLog *os
 		if err != nil {
 			if skipErrors {
 				if errorLog != nil {
-					fmt.Fprintf(errorLog, "File: %s, Row %d: invalid CellE_m value: %v\n", filepath.Base(csvPath), i+1, err)
+					_, _ = fmt.Fprintf(errorLog, "File: %s, Row %d: invalid CellE_m value: %v\n", filepath.Base(csvPath), i+1, err)
 				}
 				skippedRows++
 				continue
@@ -160,7 +169,7 @@ func convertCSVtoLAS(csvPath, outputFolder string, skipErrors bool, errorLog *os
 		if err != nil {
 			if skipErrors {
 				if errorLog != nil {
-					fmt.Fprintf(errorLog, "File: %s, Row %d: invalid CellN_m value: %v\n", filepath.Base(csvPath), i+1, err)
+					_, _ = fmt.Fprintf(errorLog, "File: %s, Row %d: invalid CellN_m value: %v\n", filepath.Base(csvPath), i+1, err)
 				}
 				skippedRows++
 				continue
@@ -171,7 +180,7 @@ func convertCSVtoLAS(csvPath, outputFolder string, skipErrors bool, errorLog *os
 		if err != nil {
 			if skipErrors {
 				if errorLog != nil {
-					fmt.Fprintf(errorLog, "File: %s, Row %d: invalid Elevation_m value: %v\n", filepath.Base(csvPath), i+1, err)
+					_, _ = fmt.Fprintf(errorLog, "File: %s, Row %d: invalid Elevation_m value: %v\n", filepath.Base(csvPath), i+1, err)
 				}
 				skippedRows++
 				continue
@@ -182,7 +191,7 @@ func convertCSVtoLAS(csvPath, outputFolder string, skipErrors bool, errorLog *os
 		if err != nil {
 			if skipErrors {
 				if errorLog != nil {
-					fmt.Fprintf(errorLog, "File: %s, Row %d: invalid PassCount value: %v\n", filepath.Base(csvPath), i+1, err)
+					_, _ = fmt.Fprintf(errorLog, "File: %s, Row %d: invalid PassCount value: %v\n", filepath.Base(csvPath), i+1, err)
 				}
 				skippedRows++
 				continue
@@ -193,7 +202,7 @@ func convertCSVtoLAS(csvPath, outputFolder string, skipErrors bool, errorLog *os
 		if err != nil {
 			if skipErrors {
 				if errorLog != nil {
-					fmt.Fprintf(errorLog, "File: %s, Row %d: invalid TargPassCount value: %v\n", filepath.Base(csvPath), i+1, err)
+					_, _ = fmt.Fprintf(errorLog, "File: %s, Row %d: invalid TargPassCount value: %v\n", filepath.Base(csvPath), i+1, err)
 				}
 				skippedRows++
 				continue
@@ -220,7 +229,8 @@ func convertCSVtoLAS(csvPath, outputFolder string, skipErrors bool, errorLog *os
 	}
 
 	if skipErrors && skippedRows > 0 && errorLog != nil {
-		fmt.Fprintf(errorLog, "File: %s - Total skipped rows: %d\n", filepath.Base(csvPath), skippedRows)
+		// Best-effort log; write failure is non-fatal in skip-errors mode
+		_, _ = fmt.Fprintf(errorLog, "File: %s - Total skipped rows: %d\n", filepath.Base(csvPath), skippedRows)
 	}
 
 	// Create LAS file
