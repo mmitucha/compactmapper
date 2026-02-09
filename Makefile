@@ -1,4 +1,4 @@
-.PHONY: all build build-windows build-macos test test-integration test-unit clean install run help
+.PHONY: all build build-windows build-macos test test-integration test-unit clean install run help govulncheck ci
 
 # Variables
 APP_NAME = compactmapper
@@ -56,9 +56,9 @@ build-macos: ## Build for macOS (native build)
 # Test targets
 test: test-unit test-integration ## Run all tests
 
-test-unit: ## Run unit tests only (fast)
+test-unit: ## Run unit tests with race detection
 	@echo "Running unit tests..."
-	@go test -v ./internal/sorter ./internal/converter ./las
+	@go test -v -race ./internal/sorter ./internal/converter ./las
 
 test-integration: ## Run component integration tests (Go tests with build tag)
 	@echo "Running component integration tests..."
@@ -69,6 +69,8 @@ test-e2e: clean build ## Run end-to-end black-box tests (bash script)
 	@./test/integration_test.sh
 
 test-all: test-unit test-integration test-e2e ## Run all test levels (unit + integration + e2e)
+
+ci: test-unit test-integration govulncheck lint ## Run all CI checks (tests + security + lint)
 
 test-coverage: ## Run tests with coverage
 	@echo "Running tests with coverage..."
@@ -101,8 +103,13 @@ fmt: ## Format code
 
 lint: ## Run linter (requires golangci-lint)
 	@echo "Running linter..."
-	@golangci-lint run
+	@golangci-lint run --timeout=5m
 	@echo "✓ Lint complete"
+
+govulncheck: ## Run Go vulnerability check (requires govulncheck)
+	@echo "Running vulnerability check..."
+	@govulncheck ./...
+	@echo "✓ Vulnerability check complete"
 
 deps: ## Download and tidy dependencies
 	@echo "Downloading dependencies..."
